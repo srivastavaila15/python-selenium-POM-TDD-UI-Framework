@@ -1,0 +1,7 @@
+{
+  "base_url": "https://parabank.parasoft.com/parabank/index.htm",
+  "username": "test",
+  "password": "hide",
+  "browser": "chrome",
+  "timeout": 10
+}
