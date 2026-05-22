@@ -1,7 +1,8 @@
 {
-  "base_url": "https://parabank.parasoft.com/parabank/index.htm",
-  "username": "test",
-  "password": "hide",
+  "base_url": "https://www.saucedemo.com/",
+  "username": "standard_user",
+  "password": "secret_sauce",
+  "invalid_password": "test",
   "browser": "chrome",
   "timeout": 10
 }

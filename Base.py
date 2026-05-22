@@ -1,8 +1,10 @@
+from selenium.common import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 class BasePage:
     def __init__(self, driver):
+        #self.timeout = 10
         self.driver = driver
         self.wait = WebDriverWait(self.driver, 10) # 10-second explicit wait
 
@@ -22,3 +24,11 @@ class BasePage:
 
     def get_title(self):
         return self.driver.title
+
+    def is_element_displayed(self, locator):
+        """Returns True if element is visible on the page, False otherwise."""
+        try:
+            self.wait.until(EC.visibility_of_element_located(locator))
+            return True
+        except TimeoutException:
+            return False

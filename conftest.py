@@ -4,6 +4,8 @@ from datetime import datetime
 import pytest_html
 from selenium import webdriver
 import pytest
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 
 # Update: 'items' is now 'cells' in the latest versions
 @pytest.hookimpl(optionalhook=True)
@@ -53,19 +55,40 @@ def pytest_runtest_makereport(item, call):
                 extra.append(pytest_html.extras.html(html))
         report.extra = extra
 
+
+
 @pytest.fixture(scope="function")
 def driver(request):
-    """Setup and teardown for the WebDriver."""
-    options = webdriver.ChromeOptions()
+    """Setup and teardown for the WebDriver with full password/alert suppression."""
+    options = Options()
+
+    # ── UI & automation flags ──────────────────────────────────────────────────
     options.add_argument("--start-maximized")
+    options.add_argument("--disable-notifications")
+    options.add_argument("--disable-popup-blocking")
+    options.add_argument("--disable-blink-features=AutomationControlled")
 
-    driver = webdriver.Chrome(options=options)
+    # ── Safe Browsing (triggers the "change your password" alert) ─────────────
+    options.add_argument("--safebrowsing-disable-extension-blacklist")
+    options.add_argument("--safebrowsing-disable-download-protection")
+    options.add_argument("--disable-safe-browsing")  # nuclear option
 
-    # This line allows the 'request' to pass the driver back to the hook below
-    request.node.driver = driver
+    # ── Password Manager (suppresses save/leak-detection popups) ──────────────
+    options.add_experimental_option("prefs", {
+        "credentials_enable_service": False,
+        "profile.password_manager_enabled": False,
+        "profile.password_manager_leak_detection": False,   # ← the key one
+    })
 
-    yield driver
-    driver.quit()
+    # ── Hide automation signals ────────────────────────────────────────────────
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
+
+    driver_instance = webdriver.Chrome(options=options)
+    request.node.driver = driver_instance
+
+    yield driver_instance
+    driver_instance.quit()
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
